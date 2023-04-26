@@ -78,11 +78,10 @@ int main(int argc, char* argv[])
 
 	/*----------------------Core algorithm starts here----------------------------------------------*/
 	omp_set_num_threads(P);
-    #pragma omp parallel for shared(a) private(i,j,k,ratio,div,sum)
     for(i=0; i<n-1; i++)
     {
         div = a[i][i];
-        #pragma omp parallel for shared(a) private(j)
+        #pragma omp parallel for shared(a) private(j,ratio)
         for(j=i+1; j<n; j++)
         {
             ratio = a[j][i]/div;
