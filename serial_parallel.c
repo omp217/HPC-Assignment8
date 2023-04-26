@@ -64,12 +64,12 @@ int main(int argc, char* argv[])
     int n = N;
     double div, ratio, sum;
     double **a = (double **)malloc(n * sizeof(double *));
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
         a[i] = (double *)malloc(n+1 * sizeof(double));
 
     // Randomly generate augmented matrix
-    for(int i=0; i<n; i++)
-        for(int j=0; j<n+1; j++)
+    for(i=0; i<n; i++)
+        for(j=0; j<n+1; j++)
             a[i][j] = rand() % 10000;
 	/*----------------INPUT/OUPUT operations end here-----------------------------*/
 
