@@ -98,8 +98,7 @@ int main(int argc, char* argv[])
             // a[i][n] -= a[i][j] * a[j][n];
             sum += a[i][j] * a[j][n];
         }
-        a[i][n] -= sum;
-        a[i][n] /= a[i][i];
+        a[i][n] = (a[i][n] - sum) / a[i][i];
     }
 	/*----------------------Core algorithm finished--------------------------------------------------*/
 
