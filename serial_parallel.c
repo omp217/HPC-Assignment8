@@ -14,7 +14,9 @@ struct timespec diff(struct timespec start, struct timespec end);
 
 /*
    Function to computes the difference between two time instances
+
    Taken from - http://www.guyrutenberg.com/2007/09/22/profiling-code-using-clock_gettime/
+
    Further reading:
 http://stackoverflow.com/questions/6749621/how-to-create-a-high-resolution-timer-in-linux-to-measure-program-performance
 http://stackoverflow.com/questions/3523442/difference-between-clock-realtime-and-clock-monotonic
@@ -69,33 +71,40 @@ int main(int argc, char* argv[])
     for(int i=0; i<n; i++)
         for(int j=0; j<n+1; j++)
             a[i][j] = rand() % 10000;
-    
 	/*----------------INPUT/OUPUT operations end here-----------------------------*/
+
 
 	clock_gettime(CLK, &start_alg);	/* Start the algo timer */
 
 	/*----------------------Core algorithm starts here----------------------------------------------*/
-    for (int k = 0; k < N; k++)
+	omp_set_num_threads(P);
+    #pragma omp parallel for shared(a) private(i,j,k,ratio,div,sum)
+    for(i=0; i<n-1; i++)
     {
-        // Forward elimination
-        for (int i = k + 1; i < N; i++)
+        div = a[i][i];
+        #pragma omp parallel for shared(a) private(j)
+        for(j=i+1; j<n; j++)
         {
-            double c = -a[i][k] / a[k][k];
-            a[i][k] = 0; 
-            for (int j = k+1; j < N + 1; j++)
-            {
-                a[i][j] += c * a[k][j];
-            }
+            ratio = a[j][i]/div;
+            for(k=i; k<n+1; k++)
+                a[j][k] -= ratio * a[i][k];
         }
     }
 
-    for (int i = N - 1; i >= 0; i--)
+    #pragma omp parallel for shared(a) private(i,j,sum)
+    for(i=n-1; i>=0; i--)
     {
-        // x[i] = a[i][N] / a[i][i];
-        a[i][N] /= a[i][i];
-        for (int j = i - 1; j >= 0; j--)
-            a[j][N] -= a[j][i] * a[i][N];
+        sum = 0;
+        // for(j=i+1; j<n; j++)
+        //     sum += a[i][j] * a[j][n];
+        #pragma omp parallel for shared(a) private(j) reduction(+:sum)
+        for(j=i+1; j<n; j++)
+            sum += a[i][j] * a[j][n];
+        #pragma omp atomic
+        a[i][n] -= sum;
+        a[i][n] /= a[i][i];
     }
+
 	/*----------------------Core algorithm finished--------------------------------------------------*/
 
 	clock_gettime(CLK, &end_alg);	/* End the algo timer */
